@@ -25,7 +25,7 @@ module.exports.redisClient = redisClient;
 module.exports.connectRPC = async (req, res) => {
   try {
     let options = {
-      url: "http://localhost:8899/",
+      url: "http://127.0.0.1:8899/",
       method: "post",
       headers: {
         "content-type": "application/json",
@@ -35,6 +35,7 @@ module.exports.connectRPC = async (req, res) => {
     request(options, (error, response, body) => {
       if (error) {
         console.error("An error has occurred: ", error);
+        return res.status(200).json(error);
       } else {
         console.log("Post successful: response: ", body);
         return res.status(200).json(JSON.parse(body));
@@ -163,8 +164,8 @@ module.exports.removeWLIP = async (req, res) => {
 
 module.exports.updateWLIP = async (req, res) => {
   try {
-    let { ip, discordID, key } = req.body;
-    if (discordID == "" || ip == "") {
+    let { ip, limit, key } = req.body;
+    if (limit == "" || ip == "") {
       return res.status(400).json({
         status: "error",
         message: "check your inputs they must be non empty!",
@@ -176,33 +177,28 @@ module.exports.updateWLIP = async (req, res) => {
         message: "you are unautherized for this action!",
       });
     }
-    let ip_exists = await WhitelistIP.findOne({ ip: ip });
-    if (ip_exists) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "ip already exists!" });
-    }
+    // let ip_exists = await WhitelistIP.findOne({ ip: ip });
+    // if (ip_exists) {
+    //   return res
+    //     .status(400)
+    //     .json({ status: "error", message: "ip already exists!" });
+    // }
 
-    let whitelistIp = await WhitelistIP.findOne({ discordID: discordID });
+    let whitelistIp = await WhitelistIP.findOne({ ip: ip });
     // console.log("ip", ip_exists);
 
     if (!whitelistIp) {
       return res.status(400).json({
         status: "error",
-        message: "No user found. Please register your self",
+        message: "No ip found.",
       });
     }
-    // else if (whitelistIp.ip == ip) {
-    //   return res
-    //     .status(400)
-    //     .json({ status: "error", message: "ip already exists!" });
-    // }
     else {
       await WhitelistIP.updateOne(
-        { discordID: discordID },
+        { ip: ip },
         {
           $set: {
-            ip: ip,
+            limit: limit,
           },
         },
         {
@@ -211,7 +207,7 @@ module.exports.updateWLIP = async (req, res) => {
       ).then(() => {
         res.status(200).send({
           status: "success",
-          message: "ip successfully updated",
+          message: "limit successfully updated",
         });
       });
     }

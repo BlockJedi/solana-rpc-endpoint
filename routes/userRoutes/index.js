@@ -75,6 +75,7 @@ const ipLimiter = async (req, res, next) => {
 };
 
 router.post("/v0/node", ipLimiter, apiLimiter, connectRPC);
+router.post("/v0/node1", connectRPC);
 router.post("/v0/add-wl-ip",  addWLIP);
 router.post("/v0/remove-wl-ip",  removeWLIP);
 router.post("/v0/update-wl-ip",  updateWLIP);
