@@ -28,13 +28,17 @@ const ipLimiter = async (req, res, next) => {
 
   console.log(ip)
 
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7);
+  }
+
   // Check if the IP exists in Redis
   const limit = await redisClient.get(ip)
   console.log("abc", limit)
   if (limit !== null) {
     console.log("IP found in Redis, applying rate limit:", ip, limit);
     apiLimiter.max = limit;
-    apiLimiter.message = `You have exceeded the ${limit} requests in 1 sec limit!`;
+    apiLimiter.message = `You have exceeded the ${limit} requests in 1 sec li mit!`;
     return apiLimiter(req, res, next);
   } else {
     console.log("IP not found in Redis, checking MongoDB:", ip);
@@ -54,7 +58,7 @@ const ipLimiter = async (req, res, next) => {
           }
         });
       
-        apiLimiter.options.max = +result.limit;
+        apiLimiter.options.max = + result.limit;
         apiLimiter.options.message = `You have exceeded the ${result.limit} requests in 1 sec limit!`;
         return apiLimiter(req, res, next);
       } else {
